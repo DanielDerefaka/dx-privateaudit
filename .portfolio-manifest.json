@@ -1,0 +1,306 @@
+{
+  "portfolio": [
+    {
+      "rank": 1,
+      "severity": "Critical",
+      "slug": "leather-postcondition-allow-mode-drain",
+      "target": "Leather wallet (leather-io extension, published Chrome build 6.107.0)",
+      "title": "Post-condition-mode type confusion renders a false 'nothing will leave your account' confirmation for an Allow-mode legacy Stacks tx",
+      "impact": "A connected dApp sends a legacy contract_call with postConditionMode:'allow' (string) and Leather affirmatively tells the user nothing can leave their account while broadcasting an unrestricted Allow-mode tx that can drain their STX, every FT and every NFT.",
+      "submit_note": "Live shipped artifact confirmed via Google CRX endpoint (v6.107.0, released 2026-07-23) matching the repo tag. Maps to the Leather HackerOne Critical category 'Malicious interactions with an already-connected wallet'. DUPLICATE status UNVERIFIED (HackerOne disclosure list is client-rendered and could not be read; no GitHub advisory/PR fixes it) \u2014 dup-check before submission.",
+      "folder": "findings/critical/01-leather-postcondition-allow-mode-drain",
+      "n_files": 3
+    },
+    {
+      "rank": 2,
+      "severity": "Critical",
+      "slug": "mina-gossip-timestamp-daemon-crash",
+      "target": "MinaProtocol/mina (L1 daemon, develop @ 213bb49bf6 / o1Labs-requested 439da4c)",
+      "title": "Unauthenticated remote DoS \u2014 malformed block-gossip timestamp (>=2^63) crashes the Mina daemon before any validation (network-wide chain halt)",
+      "impact": "Any peer crashes any Mina node (and, by flooding producers/seeds, halts the chain) with one crafted gossip message, before any proof or consensus check.",
+      "submit_note": "o1Labs actively requested validation against commit 439da4c (live engagement). Pre-auth/pre-validation, any gossip peer, negligible cost. Clean submit.",
+      "folder": "findings/critical/02-mina-gossip-timestamp-daemon-crash",
+      "n_files": 4
+    },
+    {
+      "rank": 3,
+      "severity": "Critical",
+      "slug": "zano-multisig-double-count-inflation",
+      "target": "Zano (hyle-team/zano, legacy multisig consensus, master/release v2.1.19.476)",
+      "title": "Missing intra-transaction uniqueness check on txin_multisig inputs -> multisig double-count coin inflation / escrow theft",
+      "impact": "A party able to sign for one A-valued multisig/escrow output can list it K times in a single tx that passes full consensus, minting (K-1)*A from nothing and stealing escrow-locked funds.",
+      "submit_note": "Post-HF4 mainnet realization needs an existing pre-HF4 txout_multisig/escrow output whose signature threshold the attacker can assemble (attacker-controlled-source precondition, no trusted role); pre-HF4 / regtest / CryptoNote forks are permissionlessly exploitable. Note this precondition in the write-up.",
+      "folder": "findings/critical/03-zano-multisig-double-count-inflation",
+      "n_files": 3
+    },
+    {
+      "rank": 4,
+      "severity": "Critical",
+      "slug": "dash-platform-position-type-chain-halt",
+      "target": "dashpay/platform (Dash Platform / Evolution, Rust drive-abci, v4.0.0-rc.1)",
+      "title": "Unvalidated `position` type in nested document-schema properties panics try_from_schema -> deterministic network-wide chain halt",
+      "impact": "A single self-signed DataContractCreate with a nested `position: 0.0` deterministically crashes every validator executing the block (network-wide chain halt); any funded identity can also crash nodes via check_tx.",
+      "submit_note": "Merged from ISSUE-1 + ISSUE-2 (same underlying defect, ISSUE-2 is an independent re-verification). Finding is co-located in the dash Core folder but verified against the sibling dashpay/platform checkout. Dash runs Bugcrowd; the exact brief/asset-list/DoS-exclusion is unverifiable unauthenticated (404) \u2014 confirm eligibility/tier before submission.",
+      "folder": "findings/critical/04-dash-platform-position-type-chain-halt",
+      "n_files": 5
+    },
+    {
+      "rank": 5,
+      "severity": "Critical",
+      "slug": "zen-nonceasing-multicert-chain-halt",
+      "target": "Horizen/zen (zend 6.0.0, HEAD e75197bdf / tag v6.0.0)",
+      "title": "Missing per-block non-ceasing certificate-uniqueness check reaches assert(isBlockTopQualityCert) in ConnectBlock -> poison-block network-wide chain halt",
+      "impact": "Any miner's single PoW block with two same-scId non-ceasing certs at consecutive epochs aborts every full node and re-crashes on restart (persistent poison-block chain halt).",
+      "submit_note": "Non-ceasing SCs are attacker-creatable and mainnet-active since height 1,363,115; permissionless apart from mining one PoW block. Live bounty asset-list/severity rubric not present in repo (SECURITY.md is disclosure-only) \u2014 scope-confirmation gate before submission.",
+      "folder": "findings/critical/05-zen-nonceasing-multicert-chain-halt",
+      "n_files": 4
+    },
+    {
+      "rank": 6,
+      "severity": "Critical",
+      "slug": "smoldot-grandpa-warpsync-forgery",
+      "target": "paritytech/smoldot (light client, Rust)",
+      "title": "GRANDPA justification verification does not bind the finalized block to the votes, allowing warp-sync chain forgery",
+      "impact": "One malicious peer makes a warp-syncing light client finalize an attacker-fabricated block and read ALL chain state from an attacker-chosen state root \u2014 total collapse of the light-client guarantee.",
+      "submit_note": "Warp sync is the DEFAULT path; any single malicious peer/MITM exploits it. The gap is marked by an in-code `// TODO` \u2014 confirm it still reproduces against latest upstream and disclose privately to Parity (responsible disclosure). Not run through the full adversarial pipeline (single top-level report).",
+      "folder": "findings/critical/06-smoldot-grandpa-warpsync-forgery",
+      "n_files": 2
+    },
+    {
+      "rank": 7,
+      "severity": "Critical",
+      "slug": "allora-mint-maxsupply-chain-halt",
+      "target": "allora-chain L1 (x/mint emissions/inflation module)",
+      "title": "Missing cross-state validation on x/mint MaxSupply drives ecosystem mint supply negative, panicking BeginBlocker into an unrecoverable total chain halt",
+      "impact": "A routine MaxSupply reduction that passes every validation gate makes every validator panic in BeginBlocker every block, permanently halting the network with recovery only via hard fork.",
+      "submit_note": "Trigger is a mutable whitelist-admin MsgUpdateParams (semi-trusted, not x/gov/timelock) OR a genesis author needing no key \u2014 the genesis vector forecloses a purely-privileged framing. SECURITY.md rubric names 'chain halts' as Critical impact-only. Frame around the genesis/no-key vector to pre-empt a trusted-role downgrade.",
+      "folder": "findings/critical/07-allora-mint-maxsupply-chain-halt",
+      "n_files": 4
+    },
+    {
+      "rank": 8,
+      "severity": "Critical",
+      "slug": "tellor-layer-bridge-overflow-chain-halt",
+      "target": "Tellor Layer L1 (x/bridge deposit-claim reached from x/oracle EndBlocker)",
+      "title": "Unbounded bridge-deposit amount/tip overflows int64 -> uncaught panic in oracle EndBlocker -> deterministic chain halt with no self-heal",
+      "impact": "A reporter coalition can attest one fabricated deposit that panics every validator's EndBlocker at the same height, freezing the entire chain with no on-chain remediation.",
+      "submit_note": "Gated by a ~33-50% reporter-power attestation quorum (an adversary modeled inside ADR1012's defended zone, so no trusted-role downgrade). SECURITY.md enumerates no explicit scope list and no public bounty was located \u2014 needs private scope confirmation (info@tellor.io) before submission.",
+      "folder": "findings/critical/08-tellor-layer-bridge-overflow-chain-halt",
+      "n_files": 4
+    },
+    {
+      "rank": 9,
+      "severity": "Critical",
+      "slug": "secretnetwork-nonsgx-trace-state-forgery",
+      "target": "SecretNetwork (scrtlabs/SecretNetwork non-SGX replay subsystem)",
+      "title": "Unauthenticated remote execution traces in non-SGX replay nodes enable arbitrary cross-module state forgery / native SCRT minting",
+      "impact": "A network MITM (or rogue SGX backend) on the plaintext gRPC trace link forges arbitrary bank/staking/gov state on non-SGX replay nodes \u2014 spendable SCRT minted from nothing, escalating to canonical chain-state forgery / chain-halt under non-SGX voting power.",
+      "submit_note": "Genuine-but-gated: the Critical ceiling (canonical forgery / unlimited mint at >=2/3 non-SGX voting power) is conditioned on a non-SGX validator deployment scrtlabs is actively onboarding; the present-tense PoC-proven floor is single-node (High) via plaintext-link MITM. Present both tiers honestly; the non-SGX feature line is experimental.",
+      "folder": "findings/critical/09-secretnetwork-nonsgx-trace-state-forgery",
+      "n_files": 6
+    },
+    {
+      "rank": 10,
+      "severity": "High",
+      "slug": "powpeg-migration-outpoint-misattribution-freeze",
+      "target": "powpeg-node (Rootstock PowPeg federation signing node)",
+      "title": "Pegout signed with another pegout's segwit input amounts during federation migration (findFirst over pegout_transaction_created ignores btcTxHash) -> frozen withdrawal + peg/migration halt",
+      "impact": "A batched user withdrawal is signed with the migration pegout's BIP143 input amounts, permanently freezing the withdrawal and (conditionally) reverting every subsequent updateCollections, halting pegouts and federation rotation on the live PowPeg bridge.",
+      "submit_note": "Arms only during a federation migration window (getRetiringFederationAddress() currently empty; fires at next scheduled rotation). The single frozen user withdrawal is unconditional; the network-wide halt is ~50% conditional on pre-RSKIP559 HashSet ordering. Recoverable via coordinated 5-of-9 signer upgrade (no hard fork) \u2014 which is why final severity is capped at High.",
+      "folder": "findings/high/10-powpeg-migration-outpoint-misattribution-freeze",
+      "n_files": 4
+    },
+    {
+      "rank": 11,
+      "severity": "High",
+      "slug": "virtual-vevirtual-governance-snapshot-bypass",
+      "target": "Virtual Protocol \u2014 VirtualProtocolDAOV2 / veVirtual (Base mainnet)",
+      "title": "Non-historical voting-power snapshot: veVirtual.balanceOfAt autoRenew path bypasses the time guard, enabling post-snapshot vote acquisition and governance takeover",
+      "impact": "An attacker with zero voting power at the proposal snapshot can stake autoRenew afterward and vote with full retroactive weight, enabling a no-timelock governance takeover and full DAO treasury drain.",
+      "submit_note": "A live V2 Governor/Defender consumer that realizes the treasury drain is not yet confirmed on basescan \u2014 a human must confirm the wired consumer and that governance/veVIRTUAL are in the Immunefi $200k scope. Economically gated (needs quorum-level ~25% veVIRTUAL locked ~2yr via autoRenew). Escalates to Critical on a confirmed live treasury-controlling V2.",
+      "folder": "findings/high/11-virtual-vevirtual-governance-snapshot-bypass",
+      "n_files": 5
+    },
+    {
+      "rank": 12,
+      "severity": "High",
+      "slug": "mocmedianizer-cached-validity-stale-price",
+      "target": "Money on Chain / RSK MoCMedianizer (Amphiraos-Oracle)",
+      "title": "Cached validity in Medianizer serves expired / voided / quorum-invalid prices as valid via peek()/read()",
+      "impact": "Expired, voided or quorum-invalid oracle prices keep passing peek().has / read() and downstream require(has) fund gates until someone happens to call poke().",
+      "submit_note": "The cached boolean is the documented IMoCBaseOracle.peek() integration guard and gates a require(has) in the production consumer MoCState.sol. Rated High (oracle-component), not standalone Critical \u2014 no in-scope permissionless-theft PoC is bundled with this bug alone. Expiry trigger is unpermissioned (no trusted-admin cap). Distinct from upstream issue #9.",
+      "folder": "findings/high/12-mocmedianizer-cached-validity-stale-price",
+      "n_files": 4
+    },
+    {
+      "rank": 13,
+      "severity": "High",
+      "slug": "drain-voucher-toctou-theft-of-service",
+      "target": "DRAIN \u2014 ERC-8190 signed-voucher payment-channel LLM inference marketplace (reference + 4 live handshake58.com providers)",
+      "title": "Concurrency TOCTOU in provider voucher accounting -> unbounded theft of service",
+      "impact": "One signed voucher for a single request yields N concurrent full completions (100x demonstrated), draining a provider's off-chain inference budget at an arbitrary multiple of what it is paid.",
+      "submit_note": "Loss is the operator's off-chain LLM budget, not in-contract TVL \u2014 the program must score provider-operator loss (the contracts themselves are fund-safe). Defect is replicated verbatim in 4 live marketplace providers; README.md:226 promises providers ARE protected from double-spend (novel, not marked known).",
+      "folder": "findings/high/13-drain-voucher-toctou-theft-of-service",
+      "n_files": 3
+    },
+    {
+      "rank": 14,
+      "severity": "High",
+      "slug": "hathor-nc-serialization-consensus-split",
+      "target": "hathor-core (Hathor Network full node \u2014 nano contracts / consensus)",
+      "title": "Non-deterministic serialization of frozenset/set/dict nano-contract state causes honest nodes to compute different consensus state roots -> permanent chain split",
+      "impact": "Two honest full nodes differing only by their default-random hash seed compute different nc_block_root_id for the same block once any contract stores a frozenset/dict-of-str/bytes -> permanent consensus/state split, recoverable only by hard fork.",
+      "submit_note": "Nano contracts are a live mainnet feature. Triggering-blueprint deployment is currently allowlist-gated to ~2 Hathor-Labs addresses on public chains (NC_ON_CHAIN_BLUEPRINT_RESTRICTED=True), but open to anyone on localnet/privatenet and on the roadmapped permissionless Blueprint Marketplace (Critical ceiling). State the allowlist reachability caveat; not admin-gated by field type.",
+      "folder": "findings/high/14-hathor-nc-serialization-consensus-split",
+      "n_files": 4
+    },
+    {
+      "rank": 15,
+      "severity": "High",
+      "slug": "walrus-sign-before-verify-confirmation",
+      "target": "MystenLabs/walrus (Walrus decentralized storage; Rust storage node)",
+      "title": "Storage node signs availability confirmations without verifying sliver content (sign-before-verify, WAL-523 class)",
+      "impact": "A storage node signs a truthful-looking availability attestation for bytes that are not the blob's sliver and never self-heals the corruption (dishonest attestation + suppressed recovery).",
+      "submit_note": "Calibrated High, not on-demand Critical \u2014 within the <=f Byzantine, single-epoch model it does not by itself lose a certified blob (reconstruction needs corrupting >2f shards). Partly overlaps the acknowledged in-code `//TODO(WAL-523)` on the writer side; the novel consequence is the sign-before-verify confirmation path. Not run through the adversarial pipeline (single top-level report).",
+      "folder": "findings/high/15-walrus-sign-before-verify-confirmation",
+      "n_files": 2
+    },
+    {
+      "rank": 16,
+      "severity": "High",
+      "slug": "nano-node-asc-pull-unauth-crash-halt",
+      "target": "nanocurrency/nano-node (Nano L1 node, C++, develop/v29)",
+      "title": "Missing payload-size bound in the realtime TCP message reader -> unauthenticated single 8-byte packet node crash -> network confirmation halt",
+      "impact": "Any peer crashes any nano-node with a single unauthenticated ~8-byte packet; sprayed at quorum-weight reps it halts network-wide transaction confirmation.",
+      "submit_note": "Merged from the nano-node folder ISSUE-1 and the top-level nano-node audit (same defect). Fully unauthenticated, pre-handshake, first-packet. Standalone crash is unambiguous High (CVSS 7.5); Critical is the documented composition (spray quorum-weight reps -> network-wide confirmation halt), recoverable on restart but re-triggerable. Availability/DoS only (clean assert, not RCE).",
+      "folder": "findings/high/16-nano-node-asc-pull-unauth-crash-halt",
+      "n_files": 5
+    },
+    {
+      "rank": 17,
+      "severity": "High",
+      "slug": "acala-fee-pool-sandwich-drain",
+      "target": "Acala (mandala/karura/acala runtime, transaction-payment pallet)",
+      "title": "Permissionless sandwich drain of protocol-owned charge-fee-pool reserves via unguarded ExactSupply(_,0) refill swap (configured 10% oracle guard is dead code)",
+      "impact": "Any permissionless account can sandwich the fee-pool refill swap (min_target=0, dead oracle guard) to drain protocol-owned fee-pool reserves, proven draining ~798 of 1000 DOT on the real mandala runtime.",
+      "submit_note": "In-scope runtime pallet (index 14); front-running/sandwich/MEV not on the Immunefi out-of-scope list; maps to 'Direct loss of funds'. Permissionless. Per-incident magnitude is bounded by the governance-set fee-pool reserve (a replenishable buffer, not user deposits) and repeatable each refresh cycle \u2014 downgraded Critical->High on magnitude. PoCs are inline in the report with executed output, not committed as standalone files.",
+      "folder": "findings/high/17-acala-fee-pool-sandwich-drain",
+      "n_files": 3
+    },
+    {
+      "rank": 18,
+      "severity": "High",
+      "slug": "tusdt-council-snapshot-forge-treasury-drain",
+      "target": "TUSDT-SmartContract \u2014 ink!/Substrate collateralized stablecoin (Bittensor-subnet)",
+      "title": "Missing snapshot validation in submit_snapshot lets one council member forge the electorate and drain the treasury (+ capture maintainer)",
+      "impact": "A single rogue/compromised council member forges a Merkle snapshot (arbitrary root, circulating_supply=1 -> quorum 0), self-votes with an empty proof, and drains 100% of the treasury, escalating to permanent maintainer/governance capture.",
+      "submit_note": "Gated: attacker must hold/compromise 1 of 5 maintainer-appointed council seats \u2014 but council is granted ONLY snapshot+pause+proposal, NOT treasury or maintainer power (README L226-230), so this is privilege ESCALATION beyond the documented role, not admin-by-design. Three PoC shims are compat/liveness-only and off the auth path. Confirm the system is deployed / holds value on its target subnet (PoC is regtest).",
+      "folder": "findings/high/18-tusdt-council-snapshot-forge-treasury-drain",
+      "n_files": 4
+    },
+    {
+      "rank": 19,
+      "severity": "High",
+      "slug": "solana-m-ext-add-earner-no-consent-yield-theft",
+      "target": "solana-m-extensions \u2014 M^0 m_ext program, 'crank' variant (crank.so; also 'wm')",
+      "title": "add_earner requires no holder consent -> rogue/compromised earn manager mints a non-consenting holder's yield to itself",
+      "impact": "A single rogue/phished/compromised earn-manager key enrolls arbitrary non-consenting ext holders and redirects their newly-minted, 1:1-M-redeemable yield to itself \u2014 protocol-wide yield-stream theft plus arbitrary-holder enrollment DoS.",
+      "submit_note": "Gated: requires an admin-approved ACTIVE earn manager (semi-trusted partner), so likelihood is Medium \u2014 but a manager reaching into ARBITRARY non-customer holdings is a trust-boundary violation / privilege escalation, not 'trusted actor acting in scope', so not eligible for a fully-trusted downgrade. Author states novel vs 4 prior audit firms (Asymmetric, Sec3, OtterSec, Halborn).",
+      "folder": "findings/high/19-solana-m-ext-add-earner-no-consent-yield-theft",
+      "n_files": 2
+    },
+    {
+      "rank": 20,
+      "severity": "High",
+      "slug": "megaeth-stateless-validator-timestamp-fork",
+      "target": "MegaETH stateless-validator (Rust, reth-based)",
+      "title": "Missing timestamp validation lets a malicious block source pick the EVM fork ruleset and get an invalid block accepted/committed",
+      "impact": "A malicious/compromised sequencer backdates one header field to select a permissive fork (MiniRex, unlimited state growth) and gets the validator to accept and persist a block that is invalid under the live fork.",
+      "submit_note": "Block source is documented as UNTRUSTED (README 'maliciously injected data'), so no trusted-role cap. Auditor downgraded Critical->High honestly: in-repo impact is false-assurance / silent STF-rule violation (no in-repo value-loss consumer), and the recommended op-node deployment would keep such a block off-canonical. Escalates to Critical only if shown to gate a value-bearing downstream (not determinable from this repo).",
+      "folder": "findings/high/20-megaeth-stateless-validator-timestamp-fork",
+      "n_files": 3
+    },
+    {
+      "rank": 21,
+      "severity": "High",
+      "slug": "tellor-layer-registry-zerowindow-squat",
+      "target": "Tellor Layer L1 (x/registry RegisterSpec)",
+      "title": "Permissionless permanent registry query-type squat via zero ReportBlockWindow (runtime path missing the genesis invariant)",
+      "impact": "Anyone can permanently squat and DoS any oracle query type by registering it with a zero report window, stranding any tips later placed on it.",
+      "submit_note": "Permissionless and permanent (governance-only recovery); can strand third-party tips on the bricked query type with no refund path. Verification is keeper-level (appropriate for a message-handler logic bug), not full consensus. Same Tellor Layer scope-confirmation caveat as the bridge-overflow finding (info@tellor.io).",
+      "folder": "findings/high/21-tellor-layer-registry-zerowindow-squat",
+      "n_files": 2
+    },
+    {
+      "rank": 22,
+      "severity": "High",
+      "slug": "chainlink-loop-plugin-unauth-pprof",
+      "target": "smartcontractkit/chainlink v2 (Go node) \u2014 core/web LOOP-plugin routes",
+      "title": "Unauthenticated LOOP-plugin pprof/discovery exposure (process argv, heap/goroutine profiles, DoS) on default 0.0.0.0:6688",
+      "impact": "A remote unauthenticated client enumerates LOOP plugins and pulls their pprof debug surface (argv, memory/goroutine profiles) plus a profile-seconds DoS.",
+      "submit_note": "CAVEAT: the chainlink Go-node repo is NOT present in this audit tree (only chainlink-sui), so the PoC file and vulnerable source could not be independently re-run \u2014 qualification rests on the report's stated passing run; re-verify against a live checkout before submission. Honestly bounded below Critical (signing keys live in the core process, not LOOP-plugin memory). The node's own pprof is auth-gated; the LOOP proxy is the asymmetric gap.",
+      "folder": "findings/high/22-chainlink-loop-plugin-unauth-pprof",
+      "n_files": 1
+    }
+  ],
+  "excluded_notable": [
+    {
+      "target": "avalanchego (UptimeTracker.activate offline-uptime forge)",
+      "why_excluded": "Downgraded to Medium \u2014 the claimed 'theft of unclaimed yield' High tier is absent from the program impacts list and no concrete funds are at direct risk in the L1 code."
+    },
+    {
+      "target": "Gearbox-protocol/core-v3 (AliasedLossPolicy bad-debt bypass)",
+      "why_excluded": "Self-corrected High->Low: the PoC only reaches High under a PriceFeedStoreMock; on a mainnet fork all 48 production feeds are signature-validated and it does not reproduce."
+    },
+    {
+      "target": "chainlink v2 (H-02 VRF extraargs.DecodeV1 panic)",
+      "why_excluded": "Only the isolated unit slice-panic passes; end-to-end node-crash reachability needs a malformed on-chain emission from external Solidity not audited \u2014 harm chain unproven."
+    },
+    {
+      "target": "Pharaoh Exchange (pharaoh-contracts C-01 poke period asymmetry)",
+      "why_excluded": "Downgraded Critical->Low \u2014 snapshot-at-boundary is the intended model, the claimed 50% emission-diversion is a baseline confound, no fund loss; repo summary is 0 Critical / 0 High."
+    },
+    {
+      "target": "SecretNetwork non-SGX (already in portfolio)",
+      "why_excluded": "INCLUDED \u2014 listed here only to note its Critical ceiling is deployment-gated to the non-SGX validator line while the present-tense PoC floor is High."
+    },
+    {
+      "target": "Beldex (C-01 registration OOB consensus halt)",
+      "why_excluded": "Valid Critical with passing PoC but already-known (public Beldex PR #197, fixed upstream in Oxen since 2022) and no bug-bounty program exists \u2014 fails novelty/scope."
+    },
+    {
+      "target": "ipfs/go-graphsync (unbounded DAG-CBOR recursion crash)",
+      "why_excluded": "Already-known public CVE-2026-42328 / GHSA-w239-58x2-q8p5, patched upstream in go-ipld-prime v0.23.0; root cause is a third-party dependency, fix is a dep bump."
+    },
+    {
+      "target": "Nym nym-pool CosmWasm contract (allowance drain)",
+      "why_excluded": "Critical code-level severity but the contract is undeployed and holds zero funds (absent from all mainnet instances) \u2014 no deployed target holding value; live risk Informational."
+    },
+    {
+      "target": "USDFC / Secured Finance stablecoin-contracts (oracle staleness + others)",
+      "why_excluded": "Flagship oracle-staleness item adversarially downgraded to Medium (multiple freshness backstops); the other USDFC findings resolve to Low/Informational (by-design, empty beneficiaries, trusted multisig)."
+    },
+    {
+      "target": "Aptos Move VM struct-hijack (new.md across zksync/sequencer/swap-vm/bc-confidence)",
+      "why_excluded": "Third-party Hexens disclosure (coordinated via SEAL911, already vendor-patched Feb 2026) misfiled into unrelated folders; not novel, not the researcher's, reproductions rely on lowered flush thresholds."
+    },
+    {
+      "target": "Zcash Orchard / halo2 methodology writeups (evm-smart-contracts, ore, beldex, snarkVM, pharaoh, swap-vm)",
+      "why_excluded": "DUPLICATE_METHODOLOGY \u2014 analyses of the already-patched (NU6.2) third-party Zcash bug, not findings against the host repos they sit in."
+    },
+    {
+      "target": "Babylon Genesis (x/costaking zero-score reward freeze)",
+      "why_excluded": "PoC holds only on a fresh-genesis harness; archive-verified that live bbn-1 mainnet structurally avoids the zero-score window (v4 migration set TotalScore>0) \u2014 corrected mainnet severity Low."
+    },
+    {
+      "target": "Lombard LBTC evm-smart-contracts (consortium duplicate-validator + PartnerVault)",
+      "why_excluded": "Duplicate-validator downgraded to Medium (no permissionless/sub-threshold install path); PartnerVault items are trusted-admin-gated / mock-only / already-known (Halborn V2)."
+    }
+  ],
+  "counts": {
+    "critical": 9,
+    "high": 14,
+    "excluded": 66,
+    "folders_swept": 54
+  }
+}
